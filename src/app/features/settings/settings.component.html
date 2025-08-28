@@ -1,0 +1,143 @@
+<div class="settings-container">
+  <!-- Header de Configuración -->
+  <div class="settings-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="settings-title">Configuración</h1>
+        <p class="settings-subtitle">{{ getCompanyName() }} - {{ getUserName() }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido de Configuración -->
+  <div class="settings-content">
+    <!-- Sidebar de Navegación -->
+    <aside class="settings-sidebar">
+      <nav class="settings-nav" role="navigation" aria-label="Navegación de configuración">
+        <ul class="nav-list">
+          <li *ngFor="let section of settingSections" class="nav-item">
+            <button
+              class="nav-button"
+              [class.active]="section.id === activeSection()"
+              (click)="setActiveSection(section.id)"
+              [attr.aria-label]="'Ir a configuración de ' + section.title"
+            >
+              <span class="nav-icon">{{ section.icon }}</span>
+              <div class="nav-content">
+                <span class="nav-title">{{ section.title }}</span>
+                <span class="nav-description">{{ section.description }}</span>
+              </div>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Panel de Configuración -->
+    <main class="settings-panel" role="main">
+      <div *ngIf="getActiveSection()" class="panel-content">
+        <!-- Header de la Sección -->
+        <div class="section-header">
+          <div class="section-info">
+            <span class="section-icon">{{ getActiveSection()?.icon }}</span>
+            <div class="section-details">
+              <h2 class="section-title">{{ getActiveSection()?.title }}</h2>
+              <p class="section-description">{{ getActiveSection()?.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuraciones de la Sección -->
+        <div class="settings-list">
+          <div *ngFor="let setting of getActiveSection()?.settings" class="setting-item">
+            <div class="setting-info">
+              <div class="setting-header">
+                <h3 class="setting-label">{{ setting.label }}</h3>
+                <p class="setting-description">{{ setting.description }}</p>
+              </div>
+            </div>
+
+            <div class="setting-control">
+              <!-- Toggle Switch -->
+              <div *ngIf="setting.type === 'toggle'" class="toggle-container">
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    [checked]="getSettingValue(setting)"
+                    (change)="updateSetting(setting, $any($event.target).checked)"
+                    [attr.aria-label]="setting.label"
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- Select Dropdown -->
+              <div *ngIf="setting.type === 'select'" class="select-container">
+                <select
+                  [value]="getSettingValue(setting)"
+                  (change)="updateSetting(setting, $any($event.target).value)"
+                  class="setting-select"
+                  [attr.aria-label]="setting.label"
+                >
+                  <option *ngFor="let option of setting.options" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Input Field -->
+              <div *ngIf="setting.type === 'input'" class="input-container">
+                <input
+                  type="text"
+                  [value]="getSettingValue(setting)"
+                  (input)="updateSetting(setting, $any($event.target).value)"
+                  class="setting-input"
+                  [placeholder]="'Ingrese ' + setting.label.toLowerCase()"
+                  [attr.aria-label]="setting.label"
+                />
+              </div>
+
+              <!-- Action Button -->
+              <div *ngIf="setting.type === 'button'" class="button-container">
+                <button
+                  class="setting-button"
+                  (click)="executeSettingAction(setting)"
+                  [attr.aria-label]="setting.description"
+                >
+                  <span class="button-icon">⚙️</span>
+                  <span class="button-text">Configurar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer de la Sección -->
+        <div class="section-footer">
+          <div class="footer-actions">
+            <button class="save-button" aria-label="Guardar cambios">
+              <span class="button-icon">💾</span>
+              <span class="button-text">Guardar Cambios</span>
+            </button>
+            <button class="reset-button" aria-label="Restablecer configuración">
+              <span class="button-icon">🔄</span>
+              <span class="button-text">Restablecer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado Vacío -->
+      <div *ngIf="!getActiveSection()" class="empty-state">
+        <div class="empty-content">
+          <span class="empty-icon">⚙️</span>
+          <h3 class="empty-title">Selecciona una categoría</h3>
+          <p class="empty-description">
+            Elige una categoría del menú lateral para ver y modificar las configuraciones
+            disponibles.
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,741 @@
+<div class="sales-module">
+  <header class="sales-header">
+    <div class="sales-header-left">
+      <h1>Módulo de Ventas</h1>
+      <p class="muted">Gestión de ventas, pedidos y clientes — Mockup empresarial</p>
+    </div>
+    <div class="sales-header-right">
+      <button class="btn btn-outline" aria-label="Importar ventas">Importar</button>
+      <button class="btn btn-outline" aria-label="Exportar ventas">Exportar</button>
+      <button class="btn btn-primary" aria-label="Nueva venta">+ Nueva Venta</button>
+    </div>
+  </header>
+
+  <!-- Top KPIs -->
+  <section class="kpis">
+    <div class="kpi">
+      <div class="kpi-title">Ventas (Mes)</div>
+      <div class="kpi-value">S/ 124,560</div>
+      <div class="kpi-meta">+8.4% vs mes anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Órdenes</div>
+      <div class="kpi-value">1,256</div>
+      <div class="kpi-meta">Tasa de conversión 3.2%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Ticket Promedio</div>
+      <div class="kpi-value">S/ 99.12</div>
+      <div class="kpi-meta">Valor promedio por venta</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-title">Clientes Activos</div>
+      <div class="kpi-value">842</div>
+      <div class="kpi-meta">Nuevos: 92</div>
+    </div>
+  </section>
+
+  <!-- Controls and Filters -->
+  <section class="controls">
+    <div class="controls-left">
+      <label class="search">
+        <input type="search" placeholder="Buscar por ID, cliente, producto..." />
+      </label>
+      <select class="select">
+        <option value="all">Todos los estados</option>
+        <option value="completed">Completada</option>
+        <option value="pending">Pendiente</option>
+        <option value="processing">Procesando</option>
+      </select>
+      <input type="date" class="date-input" />
+      <input type="date" class="date-input" />
+    </div>
+    <div class="controls-right">
+      <button class="btn btn-ghost">Filtrar</button>
+      <button class="btn">Limpiar</button>
+    </div>
+  </section>
+
+  <!-- Views navigation -->
+  <nav class="views-nav">
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'orders'"
+      (click)="setView('orders')"
+    >
+      Órdenes
+    </button>
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'quotes'"
+      (click)="setView('quotes')"
+    >
+      Cotizaciones
+    </button>
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'contracts'"
+      (click)="setView('contracts')"
+    >
+      Contratos
+    </button>
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'delivery'"
+      (click)="setView('delivery')"
+    >
+      Entregas
+    </button>
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'invoices'"
+      (click)="setView('invoices')"
+    >
+      Facturas
+    </button>
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'notes'"
+      (click)="setView('notes')"
+    >
+      Notas (C/D)
+    </button>
+    <button
+      class="btn btn-sm"
+      [class.active]="currentView() === 'dashboards'"
+      (click)="setView('dashboards')"
+    >
+      Dashboards
+    </button>
+  </nav>
+
+  <!-- Main content: chart + entity tables -->
+  <section class="main" [class.full]="currentView() === 'dashboards'">
+    <aside class="chart-panel" *ngIf="currentView() !== 'dashboards'">
+      <div class="panel">
+        <div class="panel-title">Tendencia (6 meses) - {{ currentView() | uppercase }}</div>
+        <div class="chart-wrapper">
+          <canvas
+            baseChart
+            [data]="{
+              labels: chartLabels,
+              datasets: [
+                {
+                  label: currentView() + ' (mock)',
+                  data: viewCharts[currentView()],
+                  backgroundColor: 'rgba(63,81,181,0.3)',
+                  borderColor: 'rgba(63,81,181,1)',
+                  borderWidth: 1,
+                },
+              ],
+            }"
+            [options]="{
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: { y: { beginAtZero: true } },
+            }"
+            [type]="'bar'"
+          >
+          </canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Resumen Rápido</div>
+        <ul class="summary-list">
+          <li *ngFor="let s of summaryForCurrentView()">
+            {{ s.label }}: <strong>{{ s.value }}</strong>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <section class="table-panel">
+      <div class="panel panel-table">
+        <div class="panel-actions">
+          <div class="left">
+            <button class="btn btn-sm" (click)="createForCurrentView()">
+              {{ getCreateLabel() }}
+            </button>
+            <button class="btn btn-sm btn-outline">Acciones en lote</button>
+          </div>
+          <div class="right">
+            <label class="rows-per-page"
+              >Mostrar
+              <select>
+                <option>10</option>
+                <option>25</option>
+                <option>50</option>
+              </select>
+              por página
+            </label>
+          </div>
+        </div>
+
+        <!-- ORDERS VIEW -->
+        <table
+          *ngIf="currentView() === 'orders'"
+          class="orders-table"
+          role="table"
+          aria-label="Listado de pedidos"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Productos</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- dynamic rows from service -->
+            <tr *ngFor="let o of orders()">
+              <td>{{ o.id }}</td>
+              <td>{{ o.customer }}</td>
+              <td>{{ o.date | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ o.items.length }}</td>
+              <td>{{ o.total | number: '1.2-2' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'status-completed': o.status === 'Completada',
+                    'status-pending': o.status === 'Pendiente',
+                    'status-processing': o.status === 'Procesando',
+                    'status-cancelled': o.status === 'Cancelada',
+                  }"
+                  >{{ o.status }}</span
+                >
+              </td>
+              <td>
+                <button
+                  class="btn btn-icon"
+                  title="Ver"
+                  (click)="viewOrEdit('orders', o.id, 'view')"
+                >
+                  👁️
+                </button>
+                <button
+                  class="btn btn-icon"
+                  title="Editar"
+                  (click)="viewOrEdit('orders', o.id, 'edit')"
+                >
+                  ✏️
+                </button>
+                <button class="btn btn-icon" title="Eliminar" (click)="deleteFor('orders', o.id)">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- QUOTES VIEW -->
+        <table
+          *ngIf="currentView() === 'quotes'"
+          class="orders-table"
+          role="table"
+          aria-label="Listado de cotizaciones"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let q of quotes()">
+              <td>{{ q.id }}</td>
+              <td>{{ q.customer }}</td>
+              <td>{{ q.date | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ q.total | number: '1.2-2' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'status-pending': q.status === 'Enviada',
+                    'status-completed': q.status === 'Aceptada',
+                  }"
+                  >{{ q.status }}</span
+                >
+              </td>
+              <td>
+                <button class="btn btn-icon" (click)="viewOrEdit('quotes', q.id, 'view')">
+                  👁️
+                </button>
+                <button class="btn btn-icon" (click)="viewOrEdit('quotes', q.id, 'edit')">
+                  ✏️
+                </button>
+                <button class="btn btn-icon" (click)="deleteFor('quotes', q.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- CONTRACTS VIEW -->
+        <table
+          *ngIf="currentView() === 'contracts'"
+          class="orders-table"
+          role="table"
+          aria-label="Listado de contratos"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Parte</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of contracts()">
+              <td>{{ c.id }}</td>
+              <td>{{ c.party }}</td>
+              <td>{{ c.start | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ c.end | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ c.value | number: '1.0-0' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'status-completed': c.status === 'Activo',
+                    'status-cancelled': c.status === 'Expirado',
+                  }"
+                  >{{ c.status }}</span
+                >
+              </td>
+              <td>
+                <button class="btn btn-icon" (click)="viewOrEdit('contracts', c.id, 'view')">
+                  👁️
+                </button>
+                <button class="btn btn-icon" (click)="viewOrEdit('contracts', c.id, 'edit')">
+                  ✏️
+                </button>
+                <button class="btn btn-icon" (click)="deleteFor('contracts', c.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- DELIVERY VIEW -->
+        <table
+          *ngIf="currentView() === 'delivery'"
+          class="orders-table"
+          role="table"
+          aria-label="Listado de entregas"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Pedido</th>
+              <th>Fecha</th>
+              <th>Transportista</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of deliveries()">
+              <td>{{ d.id }}</td>
+              <td>{{ d.orderId }}</td>
+              <td>{{ d.date | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ d.carrier }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'status-processing': d.status === 'Enviado',
+                    'status-completed': d.status === 'Entregado',
+                  }"
+                  >{{ d.status }}</span
+                >
+              </td>
+              <td>
+                <button class="btn btn-icon" (click)="viewOrEdit('delivery', d.id, 'view')">
+                  👁️
+                </button>
+                <button class="btn btn-icon" (click)="viewOrEdit('delivery', d.id, 'edit')">
+                  ✏️
+                </button>
+                <button class="btn btn-icon" (click)="deleteFor('delivery', d.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- INVOICES VIEW -->
+        <table
+          *ngIf="currentView() === 'invoices'"
+          class="orders-table"
+          role="table"
+          aria-label="Listado de facturas"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of invoices()">
+              <td>{{ i.id }}</td>
+              <td>{{ i.customer }}</td>
+              <td>{{ i.date | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ i.amount | number: '1.2-2' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'status-completed': i.status === 'Pagada',
+                    'status-pending': i.status === 'Pendiente',
+                  }"
+                  >{{ i.status }}</span
+                >
+              </td>
+              <td>
+                <button class="btn btn-icon" (click)="viewOrEdit('invoices', i.id, 'view')">
+                  👁️
+                </button>
+                <button class="btn btn-icon" (click)="viewOrEdit('invoices', i.id, 'edit')">
+                  ✏️
+                </button>
+                <button class="btn btn-icon" (click)="deleteFor('invoices', i.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- CREDIT/DEBIT NOTES VIEW -->
+        <table
+          *ngIf="currentView() === 'notes'"
+          class="orders-table"
+          role="table"
+          aria-label="Listado de notas"
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Referencia</th>
+              <th>Fecha</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let n of notes()">
+              <td>{{ n.id }}</td>
+              <td>{{ n.type }}</td>
+              <td>{{ n.ref }}</td>
+              <td>{{ n.date | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ n.amount | number: '1.2-2' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'status-completed': n.status === 'Emitida' || n.status === 'Aplicada',
+                  }"
+                  >{{ n.status }}</span
+                >
+              </td>
+              <td>
+                <button class="btn btn-icon" (click)="viewOrEdit('notes', n.id, 'view')">👁️</button>
+                <button class="btn btn-icon" (click)="viewOrEdit('notes', n.id, 'edit')">✏️</button>
+                <button class="btn btn-icon" (click)="deleteFor('notes', n.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- DASHBOARDS VIEW (placeholder) -->
+        <div *ngIf="currentView() === 'dashboards'" class="panel">
+          <div class="panel-title">Dashboards de Ventas</div>
+          <p class="muted">
+            Varias visualizaciones KPI y reportes listos para integrar (placeholder).
+          </p>
+          <div class="kpis">
+            <div class="kpi">
+              <div class="kpi-title">Ingresos totales</div>
+              <div class="kpi-value">S/ 1,240,560</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Crecimiento</div>
+              <div class="kpi-value">+12.4%</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Pedidos por día</div>
+              <div class="kpi-value">321</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pagination">
+          <button class="page">«</button>
+          <button class="page active">1</button>
+          <button class="page">2</button>
+          <button class="page">3</button>
+          <button class="page">»</button>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <footer class="sales-footer muted">
+    Panel mockup — funcionalidades CRUD y UX listas para integrar
+  </footer>
+  <!-- Create/Edit Modal (moved inside component) -->
+  <div
+    class="modal-backdrop"
+    *ngIf="showModal()"
+    style="
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.35);
+    "
+  >
+    <div class="modal">
+      <div class="modal-header">
+        <h3>{{ modalTitle() }}</h3>
+        <button class="btn btn-icon" (click)="closeModal()">✖</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="modal-body">
+          <!-- Orders / Quotes / Invoices -->
+          <div
+            class="primary-form"
+            [class.orders-mode]="editingView() === 'orders' || currentView() === 'orders'"
+            *ngIf="
+              editingView() === 'orders' ||
+              currentView() === 'orders' ||
+              editingView() === 'quotes' ||
+              currentView() === 'quotes' ||
+              editingView() === 'invoices' ||
+              currentView() === 'invoices'
+            "
+          >
+            <label
+              >Cliente
+              <select formControlName="customer">
+                <option value="">-- Seleccionar cliente --</option>
+                <option *ngFor="let c of clients()" [value]="c.name">{{ c.name }}</option>
+              </select>
+            </label>
+            <label>Fecha<input type="date" formControlName="date" /></label>
+            <label *ngIf="editingView() === 'orders' || currentView() === 'orders'"
+              >Monto<input type="number" formControlName="total"
+            /></label>
+            <!-- Extra order fields -->
+            <div
+              *ngIf="editingView() === 'orders' || currentView() === 'orders'"
+              class="order-extra"
+            >
+              <label
+                >Transportista
+                <select formControlName="carrier">
+                  <option value="">-- Seleccionar transportista --</option>
+                  <option *ngFor="let t of transportistas()" [value]="t.name">{{ t.name }}</option>
+                </select>
+              </label>
+              <label
+                >Estado de entrega
+                <select formControlName="deliveryStatus">
+                  <option>En preparación</option>
+                  <option>Enviado</option>
+                  <option>En tránsito</option>
+                  <option>Entregado</option>
+                </select>
+              </label>
+              <label
+                >Estado de facturación
+                <select formControlName="billingStatus">
+                  <option>Pendiente</option>
+                  <option>Facturada</option>
+                </select>
+              </label>
+              <label
+                >Responsable
+                <select formControlName="responsible">
+                  <option value="">-- Seleccionar responsable --</option>
+                  <option>María Pérez</option>
+                  <option>Carlos Ruiz</option>
+                  <option>Ana Gómez</option>
+                </select>
+              </label>
+            </div>
+            <!-- Estado dropdown moved above items table -->
+            <label *ngIf="editingView() === 'orders' || currentView() === 'orders'"
+              >Estado
+              <select formControlName="status">
+                <option>Completada</option>
+                <option>Pendiente</option>
+                <option>Procesando</option>
+                <option>Cancelada</option>
+              </select>
+            </label>
+
+            <!-- Items table inside modal -->
+            <div
+              *ngIf="editingView() === 'orders' || currentView() === 'orders'"
+              class="items-table"
+            >
+              <div class="items-header">
+                <h4>Items</h4>
+                <button class="btn btn-sm" type="button" (click)="addItem()">+ Añadir ítem</button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cant.</th>
+                    <th>Precio</th>
+                    <th>Peso</th>
+                    <th>IGV</th>
+                    <th>Importe</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let it of modalItems(); let i = index">
+                    <td>
+                      <textarea
+                        rows="2"
+                        (input)="updateItem(i, { product: $any($event.target).value })"
+                        >{{ it.product }}</textarea
+                      >
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        [value]="it.qty"
+                        (input)="updateItem(i, { qty: +$any($event.target).value })"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [value]="it.price"
+                        (input)="updateItem(i, { price: +$any($event.target).value })"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [value]="it.weight"
+                        (input)="updateItem(i, { weight: +$any($event.target).value })"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [value]="it.igv"
+                        (input)="updateItem(i, { igv: +$any($event.target).value })"
+                        placeholder="auto 18%"
+                      />
+                    </td>
+                    <td>{{ (it.qty || 0) * (it.price || 0) | number: '1.2-2' }}</td>
+                    <td>
+                      <button class="btn btn-icon" type="button" (click)="removeItem(i)">🗑️</button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3">Subtotal</td>
+                    <td>{{ modalTotalWeight | number: '1.0-2' }} kg</td>
+                    <td>{{ modalTotalIgv | number: '1.2-2' }}</td>
+                    <td>{{ modalSubtotal | number: '1.2-2' }}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="6">Total</td>
+                    <td>{{ modalSubtotal + modalTotalIgv | number: '1.2-2' }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <label *ngIf="editingView() === 'invoices' || currentView() === 'invoices'"
+              >Monto<input type="number" formControlName="amount"
+            /></label>
+          </div>
+
+          <!-- Contracts -->
+          <div *ngIf="editingView() === 'contracts' || currentView() === 'contracts'">
+            <label>Parte<input formControlName="party" /></label>
+            <label>Inicio<input type="date" formControlName="start" /></label>
+            <label>Fin<input type="date" formControlName="end" /></label>
+            <label>Valor<input type="number" formControlName="value" /></label>
+            <label
+              >Estado
+              <select formControlName="status">
+                <option>Activo</option>
+                <option>Expirado</option>
+                <option>Cancelado</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Delivery -->
+          <div *ngIf="editingView() === 'delivery' || currentView() === 'delivery'">
+            <label>Pedido<input formControlName="orderId" /></label>
+            <label>Fecha<input type="date" formControlName="date" /></label>
+            <label>Carrier<input formControlName="carrier" /></label>
+            <label
+              >Estado
+              <select formControlName="status">
+                <option>Enviado</option>
+                <option>En tránsito</option>
+                <option>Entregado</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Notes -->
+          <div *ngIf="editingView() === 'notes' || currentView() === 'notes'">
+            <label
+              >Tipo
+              <select formControlName="type">
+                <option>Credit</option>
+                <option>Debit</option>
+              </select>
+            </label>
+            <label>Referencia<input formControlName="ref" /></label>
+            <label>Fecha<input type="date" formControlName="date" /></label>
+            <label>Monto<input type="number" formControlName="amount" /></label>
+            <label>Estado<input formControlName="status" /></label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

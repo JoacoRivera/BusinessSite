@@ -1,0 +1,145 @@
+<div class="layout-container" [class.sidebar-collapsed]="!sidebarExpanded()">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.collapsed]="!sidebarExpanded()">
+    <!-- Sidebar header -->
+    <div class="sidebar-header">
+      <div class="company-info">
+        <!-- Make the logo clickable and keyboard-accessible -->
+        <button
+          class="company-logo"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="sidebarExpanded() ? 'Colapsar sidebar' : 'Expandir sidebar'"
+        >
+          <span class="company-code">{{ getCompanyCode() }}</span>
+        </button>
+
+        <div class="company-name" *ngIf="sidebarExpanded()">
+          {{ getCompanyName() }}
+        </div>
+      </div>
+
+      <!-- REMOVE this old arrow toggle button entirely -->
+      <!--
+  <button class="sidebar-toggle" ...> ... </button>
+  -->
+    </div>
+
+    <nav class="sidebar-nav" role="navigation" aria-label="Navegación principal">
+      <ul class="nav-list">
+        <li *ngFor="let item of navigationItems" class="nav-item">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            class="nav-link"
+            [attr.aria-label]="item.label"
+          >
+            <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+            <span class="nav-label" *ngIf="sidebarExpanded()">{{ item.label }}</span>
+            <span class="nav-badge" *ngIf="item.badge && sidebarExpanded()">{{ item.badge }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer" *ngIf="sidebarExpanded()">
+      <div class="user-info">
+        <div class="user-avatar">
+          <span class="avatar-text">{{ getUserFullName().charAt(0) }}</span>
+        </div>
+        <div class="user-details">
+          <div class="user-name">{{ getUserFullName() }}</div>
+          <div class="user-role">{{ currentUser()?.role }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button
+          class="menu-toggle"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="sidebarExpanded() ? 'Colapsar menú' : 'Expandir menú'"
+        >
+          <mat-icon class="icon">menu</mat-icon>
+        </button>
+
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar..."
+            [value]="searchQuery()"
+            (input)="updateSearchQuery($any($event.target).value)"
+            (keyup.enter)="performSearch()"
+            aria-label="Buscar en la aplicación"
+          />
+          <button class="search-button" (click)="performSearch()" aria-label="Ejecutar búsqueda">
+            <mat-icon class="icon">search</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button
+          class="theme-toggle"
+          (click)="toggleTheme()"
+          [attr.aria-label]="isDarkMode() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+        >
+          <mat-icon class="icon">{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+
+        <div class="notifications">
+          <button class="notification-button" aria-label="Notificaciones">
+            <mat-icon class="icon">notifications</mat-icon>
+            <span class="notification-badge">3</span>
+          </button>
+        </div>
+
+        <div class="user-menu">
+          <button class="user-menu-button" aria-label="Menú de usuario">
+            <span class="user-avatar-small">{{ getUserFullName().charAt(0) }}</span>
+            <span class="user-name-small" *ngIf="sidebarExpanded()">{{ getUserFullName() }}</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+
+          <div class="user-dropdown">
+            <div class="dropdown-header">
+              <div class="user-info-dropdown">
+                <div class="user-avatar-dropdown">{{ getUserFullName().charAt(0) }}</div>
+                <div class="user-details-dropdown">
+                  <div class="user-name-dropdown">{{ getUserFullName() }}</div>
+                  <div class="user-email-dropdown">{{ currentUser()?.email }}</div>
+                </div>
+              </div>
+            </div>
+
+            <ul class="dropdown-menu">
+              <li *ngFor="let item of userMenuItems" class="dropdown-item">
+                <button class="dropdown-button" (click)="item.action()">
+                  <mat-icon class="dropdown-icon">{{ item.icon }}</mat-icon>
+                  <span class="dropdown-label">{{ item.label }}</span>
+                </button>
+              </li>
+              <li class="dropdown-divider"></li>
+              <li class="dropdown-item">
+                <button class="dropdown-button logout-button" (click)="logout()">
+                  <mat-icon class="dropdown-icon">logout</mat-icon>
+                  <span class="dropdown-label">Cerrar Sesión</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content" role="main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
