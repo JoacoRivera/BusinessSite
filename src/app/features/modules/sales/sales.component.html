@@ -499,19 +499,7 @@
     Panel mockup — funcionalidades CRUD y UX listas para integrar
   </footer>
   <!-- Create/Edit Modal (moved inside component) -->
-  <div
-    class="modal-backdrop"
-    *ngIf="showModal()"
-    style="
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.35);
-    "
-  >
+  <div class="modal-backdrop" *ngIf="showModal()">
     <div class="modal">
       <div class="modal-header">
         <h3>{{ modalTitle() }}</h3>
