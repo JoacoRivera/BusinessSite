@@ -30,6 +30,13 @@ export class SalesComponent implements OnInit {
     { id: 'T-2', name: 'FedEx' },
     { id: 'T-3', name: 'Serpost' },
   ]);
+
+  public products = signal<{ id: string; name: string; price: number }[]>([
+    { id: 'PROD-001', name: 'Laptop Pro 15"', price: 1500 },
+    { id: 'PROD-002', name: 'Monitor UltraWide 34"', price: 800 },
+    { id: 'PROD-003', name: 'Teclado Mecánico RGB', price: 120 },
+    { id: 'PROD-004', name: 'Mouse Inalámbrico Ergo', price: 80 },
+  ]);
   public showModal = signal(false);
   public editing = signal<Order | null>(null);
   public form!: FormGroup;
@@ -37,6 +44,7 @@ export class SalesComponent implements OnInit {
   public editingView = signal<
     'orders' | 'quotes' | 'contracts' | 'delivery' | 'invoices' | 'notes' | 'dashboards' | null
   >(null);
+  public orderStep = signal(1);
 
   // View state: orders, quotes, contracts, delivery, invoices, notes, dashboards
   public currentView = signal<
@@ -211,6 +219,7 @@ export class SalesComponent implements OnInit {
     const v = view ?? this.currentView();
     this.editing.set(null);
     this.editingView.set(v);
+    this.orderStep.set(1);
     const prefixMap: Record<string, string> = {
       orders: 'ORD',
       quotes: 'Q',
@@ -413,6 +422,7 @@ export class SalesComponent implements OnInit {
   openEdit(order: Order) {
     this.editing.set(order);
     this.editingView.set('orders');
+    this.orderStep.set(1);
     this.form.setValue({
       id: order.id,
       customer: order.customer,
@@ -683,6 +693,25 @@ export class SalesComponent implements OnInit {
 
   closeModal() {
     this.showModal.set(false);
+    this.orderStep.set(1);
+  }
+
+  nextStep() {
+    this.orderStep.update(i => i + 1);
+  }
+
+  prevStep() {
+    this.orderStep.update(i => i - 1);
+  }
+
+  onProductNameSelect(selectedProductName: string, index: number) {
+    const selectedProduct = this.products().find(p => p.name === selectedProductName);
+    if (selectedProduct) {
+      this.updateItem(index, {
+        product: selectedProduct.name,
+        price: selectedProduct.price,
+      });
+    }
   }
 
   // Modal item CRUD helpers

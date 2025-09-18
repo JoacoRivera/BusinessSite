@@ -1,0 +1,21 @@
+{
+  "chatgpt.openOnStartup": true,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.git": true,
+    "**/*.png": true,
+    "**/*.jpg": true,
+    "**/*.mp4": true,
+    "**/*.zip": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.git": true,
+    "**/*.png": true,
+    "**/*.jpg": true,
+    "**/*.mp4": true,
+    "**/*.zip": true
+  }
+}

@@ -500,42 +500,104 @@
   </footer>
   <!-- Create/Edit Modal (moved inside component) -->
   <div class="modal-backdrop" *ngIf="showModal()">
-    <div class="modal">
+    <div class="modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="modalTitle()">
       <div class="modal-header">
-        <h3>{{ modalTitle() }}</h3>
-        <button class="btn btn-icon" (click)="closeModal()">✖</button>
+        <h3 [id]="modalTitle()">{{ modalTitle() }}</h3>
+        <button class="btn btn-icon" (click)="closeModal()" aria-label="Cerrar diálogo">✖</button>
       </div>
       <form [formGroup]="form" (ngSubmit)="save()">
         <div class="modal-body">
-          <!-- Orders / Quotes / Invoices -->
-          <div
-            class="primary-form"
-            [class.orders-mode]="editingView() === 'orders' || currentView() === 'orders'"
-            *ngIf="
-              editingView() === 'orders' ||
-              currentView() === 'orders' ||
-              editingView() === 'quotes' ||
-              currentView() === 'quotes' ||
-              editingView() === 'invoices' ||
-              currentView() === 'invoices'
-            "
-          >
-            <label
-              >Cliente
-              <select formControlName="customer">
-                <option value="">-- Seleccionar cliente --</option>
-                <option *ngFor="let c of clients()" [value]="c.name">{{ c.name }}</option>
-              </select>
-            </label>
-            <label>Fecha<input type="date" formControlName="date" /></label>
-            <label *ngIf="editingView() === 'orders' || currentView() === 'orders'"
-              >Monto<input type="number" formControlName="total"
-            /></label>
-            <!-- Extra order fields -->
+          <!-- Generic views -->
+          <ng-container *ngIf="editingView() !== 'orders' && currentView() !== 'orders'">
+            <!-- Quotes / Invoices -->
             <div
-              *ngIf="editingView() === 'orders' || currentView() === 'orders'"
-              class="order-extra"
+              *ngIf="
+                editingView() === 'quotes' ||
+                currentView() === 'quotes' ||
+                editingView() === 'invoices' ||
+                currentView() === 'invoices'
+              "
             >
+              <label
+                >Cliente
+                <select formControlName="customer">
+                  <option value="">-- Seleccionar cliente --</option>
+                  <option *ngFor="let c of clients()" [value]="c.name">{{ c.name }}</option>
+                </select>
+              </label>
+              <label>Fecha<input type="date" formControlName="date" /></label>
+              <label *ngIf="editingView() === 'invoices' || currentView() === 'invoices'"
+                >Monto<input type="number" formControlName="amount"
+              /></label>
+            </div>
+
+            <!-- Contracts -->
+            <div *ngIf="editingView() === 'contracts' || currentView() === 'contracts'">
+              <label>Parte<input formControlName="party" /></label>
+              <label>Inicio<input type="date" formControlName="start" /></label>
+              <label>Fin<input type="date" formControlName="end" /></label>
+              <label>Valor<input type="number" formControlName="value" /></label>
+              <label
+                >Estado
+                <select formControlName="status">
+                  <option>Activo</option>
+                  <option>Expirado</option>
+                  <option>Cancelado</option>
+                </select>
+              </label>
+            </div>
+
+            <!-- Delivery -->
+            <div *ngIf="editingView() === 'delivery' || currentView() === 'delivery'">
+              <label>Pedido<input formControlName="orderId" /></label>
+              <label>Fecha<input type="date" formControlName="date" /></label>
+              <label>Carrier<input formControlName="carrier" /></label>
+              <label
+                >Estado
+                <select formControlName="status">
+                  <option>Enviado</option>
+                  <option>En tránsito</option>
+                  <option>Entregado</option>
+                </select>
+              </label>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="editingView() === 'notes' || currentView() === 'notes'">
+              <label
+                >Tipo
+                <select formControlName="type">
+                  <option>Credit</option>
+                  <option>Debit</option>
+                </select>
+              </label>
+              <label>Referencia<input formControlName="ref" /></label>
+              <label>Fecha<input type="date" formControlName="date" /></label>
+              <label>Monto<input type="number" formControlName="amount" /></label>
+              <label>Estado<input formControlName="status" /></label>
+            </div>
+          </ng-container>
+
+          <!-- Orders view (stepped) -->
+          <ng-container *ngIf="editingView() === 'orders' || currentView() === 'orders'">
+            <div class="step-indicator">
+              <div class="step" [class.active]="orderStep() >= 1">1. Cliente</div>
+              <div class="step-line"></div>
+              <div class="step" [class.active]="orderStep() >= 2">2. Items</div>
+              <div class="step-line"></div>
+              <div class="step" [class.active]="orderStep() >= 3">3. Resumen</div>
+            </div>
+
+            <!-- Step 1: Cliente y datos generales -->
+            <div *ngIf="orderStep() === 1" class="primary-form orders-mode step-content">
+              <label
+                >Cliente
+                <select formControlName="customer">
+                  <option value="">-- Seleccionar cliente --</option>
+                  <option *ngFor="let c of clients()" [value]="c.name">{{ c.name }}</option>
+                </select>
+              </label>
+              <label>Fecha<input type="date" formControlName="date" /></label>
               <label
                 >Transportista
                 <select formControlName="carrier">
@@ -568,160 +630,160 @@
                   <option>Ana Gómez</option>
                 </select>
               </label>
+              <label
+                >Estado
+                <select formControlName="status">
+                  <option>Completada</option>
+                  <option>Pendiente</option>
+                  <option>Procesando</option>
+                  <option>Cancelada</option>
+                </select>
+              </label>
             </div>
-            <!-- Estado dropdown moved above items table -->
-            <label *ngIf="editingView() === 'orders' || currentView() === 'orders'"
-              >Estado
-              <select formControlName="status">
-                <option>Completada</option>
-                <option>Pendiente</option>
-                <option>Procesando</option>
-                <option>Cancelada</option>
-              </select>
-            </label>
 
-            <!-- Items table inside modal -->
-            <div
-              *ngIf="editingView() === 'orders' || currentView() === 'orders'"
-              class="items-table"
-            >
-              <div class="items-header">
-                <h4>Items</h4>
-                <button class="btn btn-sm" type="button" (click)="addItem()">+ Añadir ítem</button>
+            <!-- Step 2: Items -->
+            <div *ngIf="orderStep() === 2" class="primary-form orders-mode step-content">
+              <div class="items-table">
+                <div class="items-header">
+                  <h4>Items del Pedido</h4>
+                  <button class="btn btn-sm" type="button" (click)="addItem()">
+                    + Añadir ítem
+                  </button>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cant.</th>
+                      <th>Precio</th>
+                      <th>Peso</th>
+                      <th>IGV</th>
+                      <th>Importe</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let it of modalItems(); let i = index">
+                      <td>
+                        <select
+                          [ngModel]="it.product"
+                          (ngModelChange)="onProductNameSelect($event, i)"
+                          [ngModelOptions]="{ standalone: true }"
+                        >
+                          <option value="">-- Seleccionar producto --</option>
+                          <option *ngFor="let p of products()" [value]="p.name">
+                            {{ p.name }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          [value]="it.qty"
+                          (input)="updateItem(i, { qty: +$any($event.target).value })"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          [value]="it.price"
+                          (input)="updateItem(i, { price: +$any($event.target).value })"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          [value]="it.weight"
+                          (input)="updateItem(i, { weight: +$any($event.target).value })"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          [value]="it.igv"
+                          (input)="updateItem(i, { igv: +$any($event.target).value })"
+                          placeholder="auto 18%"
+                        />
+                      </td>
+                      <td>{{ (it.qty || 0) * (it.price || 0) | number: '1.2-2' }}</td>
+                      <td>
+                        <button class="btn btn-icon" type="button" (click)="removeItem(i)">
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th>Cant.</th>
-                    <th>Precio</th>
-                    <th>Peso</th>
-                    <th>IGV</th>
-                    <th>Importe</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let it of modalItems(); let i = index">
-                    <td>
-                      <textarea
-                        rows="2"
-                        (input)="updateItem(i, { product: $any($event.target).value })"
-                        >{{ it.product }}</textarea
-                      >
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="1"
-                        step="1"
-                        [value]="it.qty"
-                        (input)="updateItem(i, { qty: +$any($event.target).value })"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        [value]="it.price"
-                        (input)="updateItem(i, { price: +$any($event.target).value })"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        [value]="it.weight"
-                        (input)="updateItem(i, { weight: +$any($event.target).value })"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        [value]="it.igv"
-                        (input)="updateItem(i, { igv: +$any($event.target).value })"
-                        placeholder="auto 18%"
-                      />
-                    </td>
-                    <td>{{ (it.qty || 0) * (it.price || 0) | number: '1.2-2' }}</td>
-                    <td>
-                      <button class="btn btn-icon" type="button" (click)="removeItem(i)">🗑️</button>
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="3">Subtotal</td>
-                    <td>{{ modalTotalWeight | number: '1.0-2' }} kg</td>
-                    <td>{{ modalTotalIgv | number: '1.2-2' }}</td>
-                    <td>{{ modalSubtotal | number: '1.2-2' }}</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td colspan="6">Total</td>
-                    <td>{{ modalSubtotal + modalTotalIgv | number: '1.2-2' }}</td>
-                  </tr>
-                </tfoot>
-              </table>
             </div>
-            <label *ngIf="editingView() === 'invoices' || currentView() === 'invoices'"
-              >Monto<input type="number" formControlName="amount"
-            /></label>
-          </div>
 
-          <!-- Contracts -->
-          <div *ngIf="editingView() === 'contracts' || currentView() === 'contracts'">
-            <label>Parte<input formControlName="party" /></label>
-            <label>Inicio<input type="date" formControlName="start" /></label>
-            <label>Fin<input type="date" formControlName="end" /></label>
-            <label>Valor<input type="number" formControlName="value" /></label>
-            <label
-              >Estado
-              <select formControlName="status">
-                <option>Activo</option>
-                <option>Expirado</option>
-                <option>Cancelado</option>
-              </select>
-            </label>
-          </div>
-
-          <!-- Delivery -->
-          <div *ngIf="editingView() === 'delivery' || currentView() === 'delivery'">
-            <label>Pedido<input formControlName="orderId" /></label>
-            <label>Fecha<input type="date" formControlName="date" /></label>
-            <label>Carrier<input formControlName="carrier" /></label>
-            <label
-              >Estado
-              <select formControlName="status">
-                <option>Enviado</option>
-                <option>En tránsito</option>
-                <option>Entregado</option>
-              </select>
-            </label>
-          </div>
-
-          <!-- Notes -->
-          <div *ngIf="editingView() === 'notes' || currentView() === 'notes'">
-            <label
-              >Tipo
-              <select formControlName="type">
-                <option>Credit</option>
-                <option>Debit</option>
-              </select>
-            </label>
-            <label>Referencia<input formControlName="ref" /></label>
-            <label>Fecha<input type="date" formControlName="date" /></label>
-            <label>Monto<input type="number" formControlName="amount" /></label>
-            <label>Estado<input formControlName="status" /></label>
-          </div>
+            <!-- Step 3: Resumen y totales -->
+            <div *ngIf="orderStep() === 3" class="primary-form orders-mode step-content">
+              <h4>Resumen del Pedido</h4>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="label">Subtotal:</span>
+                  <span class="value">{{ modalSubtotal | number: '1.2-2' }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">IGV (18%):</span>
+                  <span class="value">{{ modalTotalIgv | number: '1.2-2' }}</span>
+                </div>
+                <div class="summary-item total">
+                  <span class="label">Total:</span>
+                  <span class="value">{{ modalSubtotal + modalTotalIgv | number: '1.2-2' }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Peso total:</span>
+                  <span class="value">{{ modalTotalWeight | number: '1.0-2' }} kg</span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" (click)="closeModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar</button>
+          <ng-container *ngIf="editingView() === 'orders' || currentView() === 'orders'">
+            <button
+              type="button"
+              class="btn btn-outline"
+              *ngIf="orderStep() > 1"
+              (click)="prevStep()"
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              *ngIf="orderStep() < 3"
+              (click)="nextStep()"
+            >
+              Siguiente
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              *ngIf="orderStep() === 3"
+              [disabled]="form.invalid"
+            >
+              Guardar
+            </button>
+          </ng-container>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            *ngIf="editingView() !== 'orders' && currentView() !== 'orders'"
+          >
+            Guardar
+          </button>
         </div>
       </form>
     </div>
