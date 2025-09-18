@@ -745,8 +745,7 @@ export class SalesComponent implements OnInit {
     return lineSubtotal * ((100 + igvPercentage) / 100);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  trackByItem(index: number, item: OrderItem): number {
+  trackByItem(index: number): number {
     return index;
   }
 
