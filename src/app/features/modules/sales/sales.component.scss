@@ -202,7 +202,7 @@
   background: var(--surface);
   padding: var(--spacing-lg);
   border-radius: var(--border-radius-lg);
-  width: min(900px, 95vw);
+  width: min(1200px, 95vw);
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   max-height: 92vh;
@@ -385,26 +385,26 @@
   font-size: 14px;
 }
 .items-table td:first-child {
-  width: 70%;
+  width: 30%;
   white-space: normal;
 }
 .items-table td:nth-child(2) {
-  width: 6%;
+  width: 10%;
 }
 .items-table td:nth-child(3) {
-  width: 12%;
+  width: 15%;
 }
 .items-table td:nth-child(4) {
-  width: 8%;
+  width: 10%;
 }
 .items-table td:nth-child(5) {
-  width: 6%;
+  width: 10%;
 }
 .items-table td:nth-child(6) {
-  width: 7%;
+  width: 15%;
 }
 .items-table td:nth-child(7) {
-  width: 1%;
+  width: 10%;
 }
 
 /* Summary grid */

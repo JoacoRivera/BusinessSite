@@ -456,9 +456,10 @@ export class SalesComponent implements OnInit {
       const items = this.modalItems().map(it => {
         const qty = +it.qty || 0;
         const price = +it.price || 0;
-        const line = qty * price;
-        const igv = typeof it.igv === 'number' ? it.igv : Math.round(line * 0.18 * 100) / 100;
-        return { ...it, qty, price, igv } as OrderItem;
+        const lineSubtotal = qty * price;
+        const igvPercentage = it.igv != null ? it.igv : 18;
+        const igvAmount = Math.round(lineSubtotal * (igvPercentage / 100) * 100) / 100;
+        return { ...it, qty, price, igv: igvAmount }; // save igv as amount
       });
       const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
       const totalIgv = items.reduce((s, i) => s + (i.igv || 0), 0);
@@ -717,7 +718,7 @@ export class SalesComponent implements OnInit {
   // Modal item CRUD helpers
   addItem(item?: Partial<OrderItem>) {
     const it: OrderItem = {
-      product: item?.product ?? 'Nuevo ítem',
+      product: item?.product ?? '',
       qty: item?.qty ?? 1,
       price: item?.price ?? 0,
       weight: item?.weight ?? 0,
@@ -738,16 +739,29 @@ export class SalesComponent implements OnInit {
     this.modalItems.update(arr => arr.filter((_, i) => i !== index));
   }
 
+  getLineTotal(item: OrderItem): number {
+    const lineSubtotal = (item.qty || 0) * (item.price || 0);
+    const igvPercentage = item.igv != null ? item.igv : 18;
+    return lineSubtotal * ((100 + igvPercentage) / 100);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  trackByItem(index: number, item: OrderItem): number {
+    return index;
+  }
+
   // computed totals from modal items
   get modalSubtotal() {
     return this.modalItems().reduce((s, i) => s + (i.qty || 0) * (i.price || 0), 0);
   }
 
   get modalTotalIgv() {
-    return this.modalItems().reduce(
-      (s, i) => s + (i.igv || Math.round((i.qty || 0) * (i.price || 0) * 0.18 * 100) / 100),
-      0
-    );
+    return this.modalItems().reduce((s, i) => {
+      const lineSubtotal = (i.qty || 0) * (i.price || 0);
+      const igvPercentage = i.igv != null ? i.igv : 18;
+      const taxAmount = lineSubtotal * (igvPercentage / 100);
+      return s + taxAmount;
+    }, 0);
   }
 
   get modalTotalWeight() {

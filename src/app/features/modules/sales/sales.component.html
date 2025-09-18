@@ -653,24 +653,24 @@
                 <table>
                   <thead>
                     <tr>
-                      <th>Producto</th>
-                      <th>Cant.</th>
-                      <th>Precio</th>
-                      <th>Peso</th>
-                      <th>IGV</th>
-                      <th>Importe</th>
-                      <th></th>
+                      <th width="45%">Producto</th>
+                      <th width="10%">Cant.</th>
+                      <th width="10%">Precio</th>
+                      <th width="10%">Peso</th>
+                      <th width="10%">IGV</th>
+                      <th width="10%">Importe</th>
+                      <th width="5%"></th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let it of modalItems(); let i = index">
+                    <tr *ngFor="let it of modalItems(); let i = index; trackBy: trackByItem">
                       <td>
                         <select
                           [ngModel]="it.product"
                           (ngModelChange)="onProductNameSelect($event, i)"
                           [ngModelOptions]="{ standalone: true }"
                         >
-                          <option value="">-- Seleccionar producto --</option>
+                          <option value="" selected>Seleccionar un producto</option>
                           <option *ngFor="let p of products()" [value]="p.name">
                             {{ p.name }}
                           </option>
@@ -713,7 +713,7 @@
                           placeholder="auto 18%"
                         />
                       </td>
-                      <td>{{ (it.qty || 0) * (it.price || 0) | number: '1.2-2' }}</td>
+                      <td>{{ getLineTotal(it) | number: '1.2-2' }}</td>
                       <td>
                         <button class="btn btn-icon" type="button" (click)="removeItem(i)">
                           🗑️
